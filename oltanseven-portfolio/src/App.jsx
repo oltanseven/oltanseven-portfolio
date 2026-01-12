@@ -73,6 +73,134 @@ export default function App() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const canvasRef = useRef(null);
   
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // SUPABASE CONFIG
+  // ═══════════════════════════════════════════════════════════════════════════════
+  
+  const SUPABASE_URL = 'https://jqcgwhnpaoepmyqktluu.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxY2d3aG5wYW9lcG15cWt0bHV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2OTk5MDksImV4cCI6MjA4MzI3NTkwOX0.WlZLlYSCFEDdC8Kr9lDGvbIXkJ8OeoWkV8Pg3w01eW0';
+  
+  // Supabase REST API helpers
+  const supabaseFetch = async (method, body = null) => {
+    const options = {
+      method,
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': method === 'GET' ? 'return=representation' : 'return=minimal',
+      },
+    };
+    if (body) options.body = JSON.stringify(body);
+    
+    const url = `${SUPABASE_URL}/rest/v1/site_settings?id=eq.main`;
+    return fetch(url, options);
+  };
+  
+  const loadFromSupabase = async () => {
+    try {
+      const res = await supabaseFetch('GET');
+      const data = await res.json();
+      if (data && data[0] && data[0].data) {
+        return data[0].data;
+      }
+      return null;
+    } catch (e) {
+      console.error('Supabase load error:', e);
+      return null;
+    }
+  };
+  
+  const saveToSupabase = async (data) => {
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/site_settings?id=eq.main`, {
+        method: 'PATCH',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal',
+        },
+        body: JSON.stringify({ data, updated_at: new Date().toISOString() }),
+      });
+    } catch (e) {
+      console.error('Supabase save error:', e);
+    }
+  };
+
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // DEFAULT DATA
+  // ═══════════════════════════════════════════════════════════════════════════════
+  
+  const defaultData = {
+    // Profil
+    sName: 'Oltan Seven',
+    sEmail: 'hello@oltanseven.com',
+    sTitle: 'Vibe Coder',
+    sBio: '"Vibe Coding" metoduyla AI destekli modern web uygulamaları geliştiriyorum. Yaratıcılık ve teknolojinin kesişiminde yenilikçi çözümler üretiyorum.',
+    sLocation: 'Türkiye',
+    sAvatar: '👨‍💻',
+    // Sosyal
+    sGithub: 'oltanseven',
+    sLinkedin: 'oltanseven',
+    sInstagram: 'oltanseven',
+    sWebsite: 'https://oltanseven.com',
+    // Email
+    contactEmail: 'sevenoltan@gmail.com',
+    web3FormsKey: 'bce5df48-e1be-48a3-a6c3-287a43e06f6a',
+    // Hero
+    heroTitle: 'Merhaba, Ben Oltan',
+    heroTagline: 'Yapay zeka ile geleceği kodluyorum',
+    heroHighlight: 'geleceği',
+    heroAvailable: true,
+    heroAvailableText: 'Yeni projelere açık',
+    // Stats
+    statProjects: '50+',
+    statProjectsLabel: 'Tamamlanan Proje',
+    statExperience: '3+',
+    statExperienceLabel: 'Yıl Deneyim',
+    statSatisfaction: '100%',
+    statSatisfactionLabel: 'Müşteri Memnuniyeti',
+    // Tech Stack
+    techStack: ['Next.js', 'React', 'TypeScript', 'Tailwind CSS', 'Supabase', 'Framer Motion', 'Node.js', 'Git'],
+    // About
+    aboutTitle: 'Yaratıcılık ve',
+    aboutHighlight: 'Teknoloji',
+    aboutDescription: '"Vibe Coding" metoduyla, AI araçlarını yaratıcı süreçlerime entegre ederek modern ve kullanıcı odaklı dijital deneyimler tasarlıyorum.',
+    // Skills
+    skills: [
+      { id: '1', icon: 'Code', label: 'Frontend', desc: 'React, Next.js, TypeScript' },
+      { id: '2', icon: 'Layers', label: 'Backend', desc: 'Node.js, Supabase, PostgreSQL' },
+      { id: '3', icon: 'Palette', label: 'Design', desc: 'Figma, Tailwind, Framer Motion' },
+      { id: '4', icon: 'Sparkles', label: 'AI Tools', desc: 'Claude, GPT-4, Cursor IDE' },
+    ],
+    // Projects
+    projects: [
+      { id: '1', title: 'oltanseven.com', desc: 'Kişisel portfolyo ve blog sitem. Next.js 14, Supabase ve Tailwind CSS ile geliştirildi.', tags: ['Next.js', 'Supabase', 'Tailwind'], published: true, featured: true, emoji: '🚀', github: 'https://github.com/oltanseven/portfolio', live: 'https://oltanseven.com', date: '2025-01-10', image: '' },
+      { id: '2', title: 'Teklif Oluşturucu', desc: 'Freelancer\'lar için profesyonel teklif hazırlama uygulaması. PDF export ve şablon sistemi.', tags: ['React', 'Node.js', 'PDF'], published: true, featured: true, emoji: '📝', github: '', live: '', date: '2025-01-05', image: '' },
+      { id: '3', title: 'AI Chat Interface', desc: 'Modern ve minimalist AI sohbet arayüzü. Real-time streaming ve markdown desteği.', tags: ['React', 'TypeScript', 'OpenAI'], published: true, featured: false, emoji: '🤖', github: '', live: '', date: '2024-12-20', image: '' },
+    ],
+    // Posts
+    posts: [
+      { id: '1', title: 'Vibe Coding Nedir?', excerpt: 'AI destekli geliştirme yolculuğum ve deneyimlerim.', content: 'Vibe Coding, yapay zeka araçlarını kullanarak daha hızlı ve etkili kod yazmayı ifade eden bir metodoloji...', tags: ['Vibe Coding', 'AI'], date: '2025-01-10', readTime: 5, published: true, featured: true, image: '' },
+      { id: '2', title: 'Next.js 15 ile Modern Web', excerpt: 'Portfolyo sitesini nasıl geliştirdim ve öğrendiklerim.', content: 'Next.js 15 ile modern web uygulamaları geliştirmek artık çok daha kolay...', tags: ['Next.js', 'React'], date: '2025-01-08', readTime: 8, published: true, featured: false, image: '' },
+    ],
+    // Messages
+    messages: [
+      { id: '1', name: 'Ahmet Yılmaz', email: 'ahmet@example.com', subject: 'Proje Teklifi', message: 'Merhaba Oltan,\n\nWeb sitemiz için bir yenileme projesi planlıyoruz. Sizinle çalışmak isteriz. Müsait olduğunuzda görüşebilir miyiz?\n\nSaygılarımla,\nAhmet', date: '2025-01-12', time: '14:30', read: false },
+      { id: '2', name: 'Elif Kaya', email: 'elif@startup.io', subject: 'İş Birliği Hakkında', message: 'Merhaba,\n\nStartup projemiz için bir landing page tasarımı yaptırmak istiyoruz. Fiyat ve süre hakkında bilgi alabilir miyim?\n\nTeşekkürler.', date: '2025-01-11', time: '10:15', read: true },
+    ],
+    // Theme
+    isDarkTheme: true,
+  };
+
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // INITIALIZE STATE
+  // ═══════════════════════════════════════════════════════════════════════════════
+  
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  
   // Contact
   const [cName, setCName] = useState('');
   const [cEmail, setCEmail] = useState('');
@@ -81,54 +209,149 @@ export default function App() {
   const [cSent, setCSent] = useState(false);
   
   // Settings - Profil
-  const [sName, setSName] = useState('Oltan Seven');
-  const [sEmail, setSEmail] = useState('hello@oltanseven.com');
-  const [sTitle, setSTitle] = useState('Vibe Coder');
-  const [sBio, setSBio] = useState('"Vibe Coding" metoduyla AI destekli modern web uygulamaları geliştiriyorum. Yaratıcılık ve teknolojinin kesişiminde yenilikçi çözümler üretiyorum.');
-  const [sLocation, setSLocation] = useState('Türkiye');
-  const [sAvatar, setSAvatar] = useState('👨‍💻');
+  const [sName, setSName] = useState(defaultData.sName);
+  const [sEmail, setSEmail] = useState(defaultData.sEmail);
+  const [sTitle, setSTitle] = useState(defaultData.sTitle);
+  const [sBio, setSBio] = useState(defaultData.sBio);
+  const [sLocation, setSLocation] = useState(defaultData.sLocation);
+  const [sAvatar, setSAvatar] = useState(defaultData.sAvatar);
   
   // Settings - Sosyal Medya
-  const [sGithub, setSGithub] = useState('oltanseven');
-  const [sLinkedin, setSLinkedin] = useState('oltanseven');
-  const [sInstagram, setSInstagram] = useState('oltanseven');
-  const [sWebsite, setSWebsite] = useState('https://oltanseven.com');
+  const [sGithub, setSGithub] = useState(defaultData.sGithub);
+  const [sLinkedin, setSLinkedin] = useState(defaultData.sLinkedin);
+  const [sInstagram, setSInstagram] = useState(defaultData.sInstagram);
+  const [sWebsite, setSWebsite] = useState(defaultData.sWebsite);
   
   // Settings - Email & Form
-  const [contactEmail, setContactEmail] = useState('sevenoltan@gmail.com');
-  const [web3FormsKey, setWeb3FormsKey] = useState('bce5df48-e1be-48a3-a6c3-287a43e06f6a');
+  const [contactEmail, setContactEmail] = useState(defaultData.contactEmail);
+  const [web3FormsKey, setWeb3FormsKey] = useState(defaultData.web3FormsKey);
   const [sendingMessage, setSendingMessage] = useState(false);
   
   // Settings - Hero Section
-  const [heroTitle, setHeroTitle] = useState('Merhaba, Ben Oltan');
-  const [heroTagline, setHeroTagline] = useState('Yapay zeka ile geleceği kodluyorum');
-  const [heroHighlight, setHeroHighlight] = useState('geleceği');
-  const [heroAvailable, setHeroAvailable] = useState(true);
-  const [heroAvailableText, setHeroAvailableText] = useState('Yeni projelere açık');
+  const [heroTitle, setHeroTitle] = useState(defaultData.heroTitle);
+  const [heroTagline, setHeroTagline] = useState(defaultData.heroTagline);
+  const [heroHighlight, setHeroHighlight] = useState(defaultData.heroHighlight);
+  const [heroAvailable, setHeroAvailable] = useState(defaultData.heroAvailable);
+  const [heroAvailableText, setHeroAvailableText] = useState(defaultData.heroAvailableText);
   
   // Settings - Stats
-  const [statProjects, setStatProjects] = useState('50+');
-  const [statProjectsLabel, setStatProjectsLabel] = useState('Tamamlanan Proje');
-  const [statExperience, setStatExperience] = useState('3+');
-  const [statExperienceLabel, setStatExperienceLabel] = useState('Yıl Deneyim');
-  const [statSatisfaction, setStatSatisfaction] = useState('100%');
-  const [statSatisfactionLabel, setStatSatisfactionLabel] = useState('Müşteri Memnuniyeti');
+  const [statProjects, setStatProjects] = useState(defaultData.statProjects);
+  const [statProjectsLabel, setStatProjectsLabel] = useState(defaultData.statProjectsLabel);
+  const [statExperience, setStatExperience] = useState(defaultData.statExperience);
+  const [statExperienceLabel, setStatExperienceLabel] = useState(defaultData.statExperienceLabel);
+  const [statSatisfaction, setStatSatisfaction] = useState(defaultData.statSatisfaction);
+  const [statSatisfactionLabel, setStatSatisfactionLabel] = useState(defaultData.statSatisfactionLabel);
   
   // Settings - Tech Stack
-  const [techStack, setTechStack] = useState(['Next.js', 'React', 'TypeScript', 'Tailwind CSS', 'Supabase', 'Framer Motion', 'Node.js', 'Git']);
+  const [techStack, setTechStack] = useState(defaultData.techStack);
   const [techInput, setTechInput] = useState('');
   
   // Settings - About Page
-  const [aboutTitle, setAboutTitle] = useState('Yaratıcılık ve');
-  const [aboutHighlight, setAboutHighlight] = useState('Teknoloji');
-  const [aboutDescription, setAboutDescription] = useState('"Vibe Coding" metoduyla, AI araçlarını yaratıcı süreçlerime entegre ederek modern ve kullanıcı odaklı dijital deneyimler tasarlıyorum.');
+  const [aboutTitle, setAboutTitle] = useState(defaultData.aboutTitle);
+  const [aboutHighlight, setAboutHighlight] = useState(defaultData.aboutHighlight);
+  const [aboutDescription, setAboutDescription] = useState(defaultData.aboutDescription);
   
   // Settings - Skills
-  const [skills, setSkills] = useState([
-    { id: '1', icon: 'Code', label: 'Frontend', desc: 'React, Next.js, TypeScript' },
-    { id: '2', icon: 'Layers', label: 'Backend', desc: 'Node.js, Supabase, PostgreSQL' },
-    { id: '3', icon: 'Palette', label: 'Design', desc: 'Figma, Tailwind, Framer Motion' },
-    { id: '4', icon: 'Sparkles', label: 'AI Tools', desc: 'Claude, GPT-4, Cursor IDE' },
+  const [skills, setSkills] = useState(defaultData.skills);
+  
+  // Data
+  const [projects, setProjects] = useState(defaultData.projects);
+  const [posts, setPosts] = useState(defaultData.posts);
+  const [messages, setMessages] = useState(defaultData.messages);
+
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // LOAD FROM SUPABASE ON MOUNT
+  // ═══════════════════════════════════════════════════════════════════════════════
+  
+  useEffect(() => {
+    const loadData = async () => {
+      const data = await loadFromSupabase();
+      if (data) {
+        // Profil
+        if (data.sName) setSName(data.sName);
+        if (data.sEmail) setSEmail(data.sEmail);
+        if (data.sTitle) setSTitle(data.sTitle);
+        if (data.sBio) setSBio(data.sBio);
+        if (data.sLocation) setSLocation(data.sLocation);
+        if (data.sAvatar) setSAvatar(data.sAvatar);
+        // Sosyal
+        if (data.sGithub) setSGithub(data.sGithub);
+        if (data.sLinkedin) setSLinkedin(data.sLinkedin);
+        if (data.sInstagram) setSInstagram(data.sInstagram);
+        if (data.sWebsite) setSWebsite(data.sWebsite);
+        // Email
+        if (data.contactEmail) setContactEmail(data.contactEmail);
+        if (data.web3FormsKey) setWeb3FormsKey(data.web3FormsKey);
+        // Hero
+        if (data.heroTitle) setHeroTitle(data.heroTitle);
+        if (data.heroTagline) setHeroTagline(data.heroTagline);
+        if (data.heroHighlight) setHeroHighlight(data.heroHighlight);
+        if (data.heroAvailable !== undefined) setHeroAvailable(data.heroAvailable);
+        if (data.heroAvailableText) setHeroAvailableText(data.heroAvailableText);
+        // Stats
+        if (data.statProjects) setStatProjects(data.statProjects);
+        if (data.statProjectsLabel) setStatProjectsLabel(data.statProjectsLabel);
+        if (data.statExperience) setStatExperience(data.statExperience);
+        if (data.statExperienceLabel) setStatExperienceLabel(data.statExperienceLabel);
+        if (data.statSatisfaction) setStatSatisfaction(data.statSatisfaction);
+        if (data.statSatisfactionLabel) setStatSatisfactionLabel(data.statSatisfactionLabel);
+        // Tech & About
+        if (data.techStack) setTechStack(data.techStack);
+        if (data.aboutTitle) setAboutTitle(data.aboutTitle);
+        if (data.aboutHighlight) setAboutHighlight(data.aboutHighlight);
+        if (data.aboutDescription) setAboutDescription(data.aboutDescription);
+        if (data.skills) setSkills(data.skills);
+        // Data
+        if (data.projects) setProjects(data.projects);
+        if (data.posts) setPosts(data.posts);
+        if (data.messages) setMessages(data.messages);
+        // Theme
+        if (data.isDarkTheme !== undefined) setIsDark(data.isDarkTheme);
+      }
+      setIsLoaded(true);
+    };
+    loadData();
+  }, []);
+
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // AUTO-SAVE TO SUPABASE (Debounced)
+  // ═══════════════════════════════════════════════════════════════════════════════
+  
+  const saveTimeoutRef = useRef(null);
+  
+  useEffect(() => {
+    if (!isLoaded) return;
+    
+    // Debounce: 1 saniye bekle, sonra kaydet
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    
+    saveTimeoutRef.current = setTimeout(async () => {
+      setIsSaving(true);
+      const dataToSave = {
+        sName, sEmail, sTitle, sBio, sLocation, sAvatar,
+        sGithub, sLinkedin, sInstagram, sWebsite,
+        contactEmail, web3FormsKey,
+        heroTitle, heroTagline, heroHighlight, heroAvailable, heroAvailableText,
+        statProjects, statProjectsLabel, statExperience, statExperienceLabel, statSatisfaction, statSatisfactionLabel,
+        techStack, aboutTitle, aboutHighlight, aboutDescription, skills,
+        projects, posts, messages,
+        isDarkTheme: isDark,
+      };
+      await saveToSupabase(dataToSave);
+      setIsSaving(false);
+    }, 1000);
+    
+    return () => {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    };
+  }, [
+    isLoaded, sName, sEmail, sTitle, sBio, sLocation, sAvatar,
+    sGithub, sLinkedin, sInstagram, sWebsite,
+    contactEmail, web3FormsKey,
+    heroTitle, heroTagline, heroHighlight, heroAvailable, heroAvailableText,
+    statProjects, statProjectsLabel, statExperience, statExperienceLabel, statSatisfaction, statSatisfactionLabel,
+    techStack, aboutTitle, aboutHighlight, aboutDescription, skills,
+    projects, posts, messages, isDark,
   ]);
   
   // Settings Tab
@@ -172,23 +395,6 @@ export default function App() {
   const [skillDesc, setSkillDesc] = useState('');
   const [skillIcon, setSkillIcon] = useState('Code');
   const [editingSkill, setEditingSkill] = useState(null);
-  
-  // Data
-  const [projects, setProjects] = useState([
-    { id: '1', title: 'oltanseven.com', desc: 'Kişisel portfolyo ve blog sitem. Next.js 14, Supabase ve Tailwind CSS ile geliştirildi.', tags: ['Next.js', 'Supabase', 'Tailwind'], published: true, featured: true, emoji: '🚀', github: 'https://github.com/oltanseven/portfolio', live: 'https://oltanseven.com', date: '2025-01-10' },
-    { id: '2', title: 'Teklif Oluşturucu', desc: 'Freelancer\'lar için profesyonel teklif hazırlama uygulaması. PDF export ve şablon sistemi.', tags: ['React', 'Node.js', 'PDF'], published: true, featured: true, emoji: '📝', github: '', live: '', date: '2025-01-05' },
-    { id: '3', title: 'AI Chat Interface', desc: 'Modern ve minimalist AI sohbet arayüzü. Real-time streaming ve markdown desteği.', tags: ['React', 'TypeScript', 'OpenAI'], published: true, featured: false, emoji: '🤖', github: '', live: '', date: '2024-12-20' },
-  ]);
-  
-  const [posts, setPosts] = useState([
-    { id: '1', title: 'Vibe Coding Nedir?', excerpt: 'AI destekli geliştirme yolculuğum ve deneyimlerim.', content: 'Vibe Coding, yapay zeka araçlarını kullanarak daha hızlı ve etkili kod yazmayı ifade eden bir metodoloji...', tags: ['Vibe Coding', 'AI'], date: '2025-01-10', readTime: 5, published: true, featured: true },
-    { id: '2', title: 'Next.js 15 ile Modern Web', excerpt: 'Portfolyo sitesini nasıl geliştirdim ve öğrendiklerim.', content: 'Next.js 15 ile modern web uygulamaları geliştirmek artık çok daha kolay...', tags: ['Next.js', 'React'], date: '2025-01-08', readTime: 8, published: true, featured: false },
-  ]);
-  
-  const [messages, setMessages] = useState([
-    { id: '1', name: 'Ahmet Yılmaz', email: 'ahmet@example.com', subject: 'Proje Teklifi', message: 'Merhaba Oltan,\n\nWeb sitemiz için bir yenileme projesi planlıyoruz. Sizinle çalışmak isteriz. Müsait olduğunuzda görüşebilir miyiz?\n\nSaygılarımla,\nAhmet', date: '2025-01-12', time: '14:30', read: false },
-    { id: '2', name: 'Elif Kaya', email: 'elif@startup.io', subject: 'İş Birliği Hakkında', message: 'Merhaba,\n\nStartup projemiz için bir landing page tasarımı yaptırmak istiyoruz. Fiyat ve süre hakkında bilgi alabilir miyim?\n\nTeşekkürler.', date: '2025-01-11', time: '10:15', read: true },
-  ]);
 
   // Time update - sadece home sayfasında
   useEffect(() => {
@@ -553,6 +759,33 @@ export default function App() {
   // ═══════════════════════════════════════════════════════════════════════════════
   // RENDER
   // ═══════════════════════════════════════════════════════════════════════════════
+
+  // Loading durumu
+  if (!isLoaded) {
+    return (
+      <div style={{ 
+        background: '#0a0a0a', 
+        color: '#fff', 
+        minHeight: '100vh', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        flexDirection: 'column',
+        gap: 16,
+        fontFamily: '"Inter", -apple-system, sans-serif'
+      }}>
+        <div style={{ 
+          width: 48, height: 48, borderRadius: 12, 
+          background: colors.lime, 
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: '#0a0a0a', fontWeight: 800, fontSize: 20,
+          animation: 'pulse 2s infinite'
+        }}>O</div>
+        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 14 }}>Yükleniyor...</p>
+        <style>{`@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.7; transform: scale(0.95); } }`}</style>
+      </div>
+    );
+  }
 
   return (
     <div style={{ background: theme.bg, color: theme.text, minHeight: '100vh', fontFamily: '"Inter", -apple-system, sans-serif' }}>
@@ -1473,9 +1706,17 @@ export default function App() {
             {/* Settings */}
             {page === 'admin-settings' && (
               <div style={{ maxWidth: 900 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                   <h1 style={{ fontSize: 28, fontWeight: 700 }}>Site Ayarları</h1>
-                  <button onClick={() => showNotif('Tüm değişiklikler kaydedildi!')} style={btnPrimary}><Save size={18} /> Kaydet</button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    {isSaving && <span style={{ fontSize: 13, color: theme.muted, display: 'flex', alignItems: 'center', gap: 6 }}>💾 Kaydediliyor...</span>}
+                    <button onClick={() => showNotif('✅ Tüm değişiklikler Supabase\'e kaydedildi!')} style={btnPrimary}><Save size={18} /> Kaydet</button>
+                  </div>
+                </div>
+                
+                <div style={{ padding: '12px 16px', background: isDark ? `${colors.lime}10` : 'rgba(143,179,57,0.1)', borderRadius: 12, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <CheckCircle size={18} color={isDark ? colors.lime : '#6B8E23'} />
+                  <span style={{ fontSize: 13, color: isDark ? colors.lime : '#4B5842' }}>Değişiklikler otomatik olarak Supabase'e kaydedilir ve tüm ziyaretçiler tarafından görülür.</span>
                 </div>
                 
                 <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
