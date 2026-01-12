@@ -36,6 +36,37 @@ export default function App() {
   // STATE
   // ═══════════════════════════════════════════════════════════════════════════════
   
+  // Admin gizli erişim
+  const ADMIN_SECRET_PATH = 'oltan-admin-2026';
+  const ADMIN_PASSWORD = 'Oltan.2026!';
+  const [adminUnlocked, setAdminUnlocked] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  
+  // URL'den gizli admin yolunu kontrol et
+  useEffect(() => {
+    const hash = window.location.hash.replace('#', '');
+    if (hash === ADMIN_SECRET_PATH) {
+      setShowAdminLogin(true);
+    }
+  }, []);
+
+  const handleAdminLogin = () => {
+    if (adminPassword === ADMIN_PASSWORD) {
+      setAdminUnlocked(true);
+      setShowAdminLogin(false);
+      setPage('admin-dashboard');
+    } else {
+      alert('Hatalı şifre!');
+    }
+  };
+
+  const handleAdminLogout = () => {
+    setAdminUnlocked(false);
+    setPage('home');
+    window.location.hash = '';
+  };
+  
   const [isDark, setIsDark] = useState(true);
   const [page, setPage] = useState('home');
   const [notif, setNotif] = useState(null);
@@ -560,7 +591,81 @@ export default function App() {
         .social-btn:hover svg { color: ${isDark ? colors.lime : '#8FB339'} !important; }
         
         .icon-float { animation: float 3s ease-in-out infinite; }
+        
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+          .bento-grid { 
+            grid-template-columns: 1fr !important; 
+            gap: 16px !important;
+          }
+          .bento-grid > * { grid-column: span 1 !important; }
+          .hero-title { font-size: 42px !important; }
+          .hero-tagline { font-size: 16px !important; }
+          .nav-pill { padding: 6px 10px !important; font-size: 11px !important; }
+          .skills-grid { grid-template-columns: 1fr !important; }
+          .project-grid { grid-template-columns: 1fr !important; }
+          .contact-grid { grid-template-columns: 1fr !important; }
+          .admin-sidebar { display: none !important; }
+          .admin-content { margin-left: 0 !important; }
+        }
+        
+        @media (max-width: 480px) {
+          .hero-title { font-size: 32px !important; }
+          .hero-tagline { font-size: 14px !important; }
+          .nav-pill { padding: 5px 8px !important; font-size: 10px !important; }
+        }
       `}</style>
+
+      {/* Admin Login Modal */}
+      {showAdminLogin && !adminUnlocked && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: 24,
+        }}>
+          <div style={{
+            background: theme.card, borderRadius: 24, padding: 40,
+            maxWidth: 400, width: '100%', textAlign: 'center',
+            border: `1px solid ${theme.border}`,
+          }}>
+            <div style={{
+              width: 64, height: 64, borderRadius: 16,
+              background: isDark ? colors.lime : '#8FB339',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              margin: '0 auto 24px', fontSize: 32,
+            }}>🔐</div>
+            <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>Admin Girişi</h2>
+            <p style={{ color: theme.muted, marginBottom: 24 }}>Devam etmek için şifrenizi girin</p>
+            <input
+              type="password"
+              placeholder="Şifre"
+              value={adminPassword}
+              onChange={(e) => setAdminPassword(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAdminLogin()}
+              style={{
+                width: '100%', padding: '14px 18px', borderRadius: 12,
+                border: `1px solid ${theme.border}`, background: theme.surface,
+                color: theme.text, fontSize: 16, marginBottom: 16, outline: 'none',
+              }}
+            />
+            <button onClick={handleAdminLogin} style={{
+              width: '100%', padding: '14px 24px', borderRadius: 12,
+              background: isDark ? colors.lime : '#8FB339',
+              color: isDark ? '#0a0a0a' : '#fff',
+              border: 'none', fontSize: 16, fontWeight: 600, cursor: 'pointer',
+            }}>
+              Giriş Yap
+            </button>
+            <button onClick={() => { setShowAdminLogin(false); window.location.hash = ''; }} style={{
+              marginTop: 16, background: 'none', border: 'none',
+              color: theme.muted, fontSize: 14, cursor: 'pointer',
+            }}>
+              İptal
+            </button>
+          </div>
+        </div>
+      )}
       
       {/* ══════════════════════════════════════════════════════════════════════════ */}
       {/* SPACE CANVAS BACKGROUND */}
@@ -599,50 +704,44 @@ export default function App() {
       {/* ══════════════════════════════════════════════════════════════════════════ */}
       
       {!page.startsWith('admin') && (
-        <header style={{ position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 100 }}>
+        <header style={{ position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 100, maxWidth: 'calc(100% - 32px)' }}>
           <nav style={{
-            display: 'flex', alignItems: 'center', gap: 8,
-            padding: '8px 12px', borderRadius: 100,
+            display: 'flex', alignItems: 'center', gap: 4,
+            padding: '6px 10px', borderRadius: 100,
             background: isDark ? 'rgba(20,20,20,0.9)' : 'rgba(255,255,255,0.85)',
             backdropFilter: 'blur(20px)',
             border: `1px solid ${isDark ? theme.border : 'rgba(143, 179, 57, 0.2)'}`,
             boxShadow: isDark ? '0 4px 24px rgba(0,0,0,0.2)' : '0 4px 24px rgba(143, 179, 57, 0.15)',
+            flexWrap: 'nowrap',
+            overflowX: 'auto',
           }}>
             {/* Logo */}
             <div style={{
-              width: 40, height: 40, borderRadius: 100,
+              width: 36, height: 36, borderRadius: 100, flexShrink: 0,
               background: isDark ? colors.lime : '#8FB339', color: isDark ? '#0a0a0a' : '#ffffff',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontWeight: 800, fontSize: 16,
+              fontWeight: 800, fontSize: 14,
             }}>O</div>
             
             {/* Nav Items */}
             {['home', 'about', 'projects', 'blog', 'contact'].map(p => (
-              <button key={p} onClick={() => { setPage(p); setSelectedPost(null); }} className="nav-item" style={{
-                padding: '10px 20px', borderRadius: 100, border: 'none',
+              <button key={p} onClick={() => { setPage(p); setSelectedPost(null); }} className="nav-item nav-pill" style={{
+                padding: '8px 14px', borderRadius: 100, border: 'none', whiteSpace: 'nowrap',
                 background: page === p ? (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)') : 'transparent',
                 color: page === p ? theme.text : theme.muted,
-                fontSize: 14, fontWeight: 500, cursor: 'pointer',
+                fontSize: 13, fontWeight: 500, cursor: 'pointer',
               }}>
                 {p === 'home' ? 'Ana Sayfa' : p === 'about' ? 'Hakkımda' : p === 'projects' ? 'Projeler' : p === 'blog' ? 'Blog' : 'İletişim'}
               </button>
             ))}
             
-            {/* Admin Button */}
-            <button onClick={() => setPage('admin-dashboard')} style={{
-              padding: '10px 20px', borderRadius: 100,
-              background: isDark ? colors.lime : '#8FB339', color: isDark ? '#0a0a0a' : '#ffffff',
-              border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer',
-              marginLeft: 8,
-            }}>Giriş</button>
-            
             {/* Theme Toggle */}
             <button onClick={() => setIsDark(!isDark)} style={{
-              width: 40, height: 40, borderRadius: 100, border: 'none',
+              width: 36, height: 36, borderRadius: 100, border: 'none', flexShrink: 0,
               background: 'transparent', cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              {isDark ? <Sun size={20} color={theme.muted} /> : <Moon size={20} color={theme.muted} />}
+              {isDark ? <Sun size={18} color={theme.muted} /> : <Moon size={18} color={theme.muted} />}
             </button>
           </nav>
         </header>
@@ -672,7 +771,7 @@ export default function App() {
             )}
             
             {/* Big Name */}
-            <h1 style={{
+            <h1 className="hero-title" style={{
               fontSize: 96,
               fontWeight: 800,
               letterSpacing: '-0.03em',
@@ -682,12 +781,12 @@ export default function App() {
             }}>{heroTitle}</h1>
             
             {/* Tagline */}
-            <p style={{ fontSize: 'clamp(20px, 3vw, 28px)', color: theme.muted, marginBottom: 48 }}>
+            <p className="hero-tagline" style={{ fontSize: 'clamp(20px, 3vw, 28px)', color: theme.muted, marginBottom: 48 }}>
               {heroTagline.split(heroHighlight)[0]}<span style={{ color: isDark ? colors.lime : '#6B8E23', fontWeight: 600 }}>{heroHighlight}</span>{heroTagline.split(heroHighlight)[1] || ''}
             </p>
             
             {/* CTA Buttons */}
-            <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
+            <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
               <button onClick={() => setPage('projects')} className="btn-hover" style={btnPrimary}>
                 Projeleri Keşfet <ArrowRight size={18} />
               </button>
@@ -701,7 +800,7 @@ export default function App() {
           {/* BENTO GRID */}
           {/* ══════════════════════════════════════════════════════════════════════════ */}
           
-          <section style={{
+          <section className="bento-grid" style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(12, 1fr)',
             gap: 20,
@@ -890,7 +989,7 @@ export default function App() {
           
           {/* Skills */}
           <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 24 }}>Yeteneklerim</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 20, marginBottom: 48 }}>
+          <div className="skills-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 20, marginBottom: 48 }}>
             {skills.map(s => {
               const IconComponent = iconMap[s.icon] || Code;
               return (
@@ -927,7 +1026,7 @@ export default function App() {
             AI destekli modern web uygulamaları ve araçlar geliştiriyorum. İşte bazı çalışmalarım.
           </p>
           
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: 24 }}>
+          <div className="project-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24 }}>
             {projects.filter(p => p.published).map(p => (
               <div key={p.id} className="card-hover" style={{ ...cardStyle, padding: 0, overflow: 'hidden' }}>
                 {p.image ? (
@@ -1111,7 +1210,7 @@ export default function App() {
             </div>
           ) : (
             <form onSubmit={handleContactSubmit} style={cardStyle}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+              <div className="contact-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
                 <div>
                   <label style={labelStyle}>Adınız *</label>
                   <input type="text" placeholder="Adınız" value={cName} onChange={(e) => setCName(e.target.value)} style={inputStyle} required />
@@ -1145,16 +1244,16 @@ export default function App() {
       {/* ADMIN LAYOUT */}
       {/* ══════════════════════════════════════════════════════════════════════════ */}
       
-      {page.startsWith('admin') && (
+      {page.startsWith('admin') && adminUnlocked && (
         <div style={{ display: 'flex', minHeight: '100vh' }}>
           {/* Sidebar */}
-          <aside style={{ width: 260, background: theme.card, borderRight: `1px solid ${theme.border}`, padding: 20, display: 'flex', flexDirection: 'column' }}>
+          <aside className="admin-sidebar" style={{ width: 260, background: theme.card, borderRight: `1px solid ${theme.border}`, padding: 20, display: 'flex', flexDirection: 'column' }}>
             <div style={{ padding: '12px 16px', marginBottom: 20 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div style={{ width: 40, height: 40, borderRadius: 12, background: isDark ? colors.lime : '#8FB339', display: 'flex', alignItems: 'center', justifyContent: 'center', color: isDark ? '#0a0a0a' : '#ffffff', fontWeight: 800 }}>O</div>
                 <div>
                   <p style={{ fontWeight: 600, fontSize: 15 }}>Admin Panel</p>
-                  <p style={{ fontSize: 12, color: theme.muted }}>oltanseven.com</p>
+                  <p style={{ fontSize: 12, color: theme.muted }}>Gizli Erişim 🔐</p>
                 </div>
               </div>
             </div>
@@ -1186,14 +1285,17 @@ export default function App() {
               <button onClick={() => setIsDark(!isDark)} style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', padding: '12px 16px', borderRadius: 12, border: 'none', background: 'transparent', color: theme.muted, fontSize: 14, cursor: 'pointer', marginBottom: 4 }}>
                 {isDark ? <Sun size={18} /> : <Moon size={18} />} {isDark ? 'Açık Tema' : 'Koyu Tema'}
               </button>
-              <button onClick={() => setPage('home')} style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', padding: '12px 16px', borderRadius: 12, border: 'none', background: 'transparent', color: theme.muted, fontSize: 14, cursor: 'pointer' }}>
+              <button onClick={() => setPage('home')} style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', padding: '12px 16px', borderRadius: 12, border: 'none', background: 'transparent', color: theme.muted, fontSize: 14, cursor: 'pointer', marginBottom: 4 }}>
                 <Globe size={18} /> Siteyi Gör
+              </button>
+              <button onClick={handleAdminLogout} style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', padding: '12px 16px', borderRadius: 12, border: 'none', background: `${colors.status.error}15`, color: colors.status.error, fontSize: 14, cursor: 'pointer' }}>
+                <X size={18} /> Çıkış Yap
               </button>
             </div>
           </aside>
 
           {/* Main Content */}
-          <main style={{ flex: 1, padding: 32, background: theme.bg, overflowY: 'auto' }}>
+          <main className="admin-content" style={{ flex: 1, padding: 32, background: theme.bg, overflowY: 'auto' }}>
             
             {/* Dashboard */}
             {page === 'admin-dashboard' && (
