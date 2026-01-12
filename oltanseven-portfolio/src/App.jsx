@@ -798,9 +798,8 @@ export default function App() {
         input, textarea, select, button { font-family: inherit; }
         input:focus, textarea:focus { border-color: ${isDark ? colors.lime : '#8FB339'} !important; box-shadow: 0 0 0 4px ${isDark ? colors.lime : '#8FB339'}15 !important; }
         ::selection { background: ${isDark ? colors.lime : '#8FB339'}40; }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: ${theme.border}; border-radius: 3px; }
+        ::-webkit-scrollbar { display: none; }
+        * { scrollbar-width: none; -ms-overflow-style: none; }
         
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
