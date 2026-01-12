@@ -422,43 +422,43 @@ export default function App() {
     resize();
     window.addEventListener('resize', resize);
     
-    // Initialize stars - light temada daha fazla ve belirgin
-    const starCount = isDark ? 150 : 120;
+    // Initialize stars - dark temada daha fazla yıldız
+    const starCount = isDark ? 200 : 120;
     for (let i = 0; i < starCount; i++) {
       stars.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        size: Math.random() * (isDark ? 2 : 2.5) + 0.5,
-        opacity: Math.random() * (isDark ? 0.8 : 0.6) + (isDark ? 0.2 : 0.3),
+        size: Math.random() * (isDark ? 2.5 : 2.5) + 0.5,
+        opacity: Math.random() * (isDark ? 0.9 : 0.6) + (isDark ? 0.3 : 0.3),
         twinkleSpeed: Math.random() * 0.02 + 0.01,
         twinkleOffset: Math.random() * Math.PI * 2,
       });
     }
     
-    // Initialize nebulae - light temada daha görünür
+    // Initialize nebulae - dark temada daha görünür
     const nebulaColors = isDark 
-      ? [colors.lime, '#00FFD1', '#A855F7']
+      ? [colors.lime, '#00FFD1', '#A855F7', '#60A5FA']
       : ['#8FB339', '#10B981', '#8B5CF6'];
     
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < (isDark ? 5 : 4); i++) {
       nebulae.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        radius: Math.random() * 350 + 200,
-        color: nebulaColors[i % 3],
-        opacity: isDark ? 0.04 : 0.12,
+        radius: Math.random() * 400 + 250,
+        color: nebulaColors[i % nebulaColors.length],
+        opacity: isDark ? 0.08 : 0.12,
         drift: Math.random() * 0.3 - 0.15,
       });
     }
     
-    // Spawn shooting star
+    // Spawn shooting star - dark temada daha sık
     const spawnShootingStar = () => {
-      if (Math.random() < (isDark ? 0.008 : 0.006)) {
+      if (Math.random() < (isDark ? 0.012 : 0.006)) {
         shootingStars.push({
           x: Math.random() * canvas.width,
           y: 0,
-          length: Math.random() * 80 + 50,
-          speed: Math.random() * 8 + 6,
+          length: Math.random() * 100 + 60,
+          speed: Math.random() * 10 + 8,
           angle: Math.PI / 4 + (Math.random() * 0.3 - 0.15),
           opacity: 1,
         });
@@ -497,11 +497,11 @@ export default function App() {
         ctx.fillStyle = `rgba(${starColor}, ${star.opacity * twinkle})`;
         ctx.fill();
         
-        // Glow effect for larger stars
+        // Glow effect for larger stars - dark temada daha parlak
         if (star.size > 1.2) {
           ctx.beginPath();
           ctx.arc(star.x, star.y, star.size * 3, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(${glowColor}, ${star.opacity * twinkle * (isDark ? 0.2 : 0.25)})`;
+          ctx.fillStyle = `rgba(${glowColor}, ${star.opacity * twinkle * (isDark ? 0.35 : 0.25)})`;
           ctx.fill();
         }
       });
@@ -513,7 +513,7 @@ export default function App() {
       shootingStars = shootingStars.filter(ss => {
         ss.x += Math.cos(ss.angle) * ss.speed;
         ss.y += Math.sin(ss.angle) * ss.speed;
-        ss.opacity -= 0.015;
+        ss.opacity -= 0.012;
         
         if (ss.opacity <= 0) return false;
         
@@ -523,8 +523,8 @@ export default function App() {
           ss.x - Math.cos(ss.angle) * ss.length,
           ss.y - Math.sin(ss.angle) * ss.length
         );
-        gradient.addColorStop(0, `rgba(${trailColor}, ${ss.opacity * (isDark ? 1 : 0.8)})`);
-        gradient.addColorStop(0.3, `rgba(${starColor}, ${ss.opacity * 0.6})`);
+        gradient.addColorStop(0, `rgba(${trailColor}, ${ss.opacity})`);
+        gradient.addColorStop(0.3, `rgba(${starColor}, ${ss.opacity * 0.7})`);
         gradient.addColorStop(1, 'transparent');
         
         ctx.beginPath();
@@ -534,20 +534,20 @@ export default function App() {
           ss.y - Math.sin(ss.angle) * ss.length
         );
         ctx.strokeStyle = gradient;
-        ctx.lineWidth = isDark ? 2 : 2.5;
+        ctx.lineWidth = isDark ? 2.5 : 2.5;
         ctx.stroke();
         
         // Bright head
         ctx.beginPath();
-        ctx.arc(ss.x, ss.y, isDark ? 2 : 3, 0, Math.PI * 2);
+        ctx.arc(ss.x, ss.y, isDark ? 3 : 3, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(${trailColor}, ${ss.opacity})`;
         ctx.fill();
         
         return ss.y < canvas.height + 100 && ss.x < canvas.width + 100;
       });
       
-      // Grid lines (subtle futuristic effect) - light temada daha belirgin
-      const gridColor = isDark ? 'rgba(205, 255, 0, 0.03)' : 'rgba(143, 179, 57, 0.08)';
+      // Grid lines (subtle futuristic effect) - dark temada daha belirgin
+      const gridColor = isDark ? 'rgba(205, 255, 0, 0.06)' : 'rgba(143, 179, 57, 0.08)';
       ctx.strokeStyle = gridColor;
       ctx.lineWidth = 1;
       const gridSize = 80;
