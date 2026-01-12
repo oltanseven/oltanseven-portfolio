@@ -407,7 +407,7 @@ export default function App() {
   // Space Canvas Animation
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || page.startsWith('admin')) return;
+    if (!canvas || page.startsWith('admin') || !isLoaded) return;
     
     const ctx = canvas.getContext('2d');
     let animationId;
@@ -573,7 +573,7 @@ export default function App() {
       window.removeEventListener('resize', resize);
       cancelAnimationFrame(animationId);
     };
-  }, [isDark, page]);
+  }, [isDark, page, isLoaded]);
 
   // ═══════════════════════════════════════════════════════════════════════════════
   // THEME
